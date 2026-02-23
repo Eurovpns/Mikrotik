@@ -54,19 +54,20 @@
         /ppp secret add name=$uname password=$upass profile=vpn-profile
     }
 
-    # ۹. اسکریپت آپدیت خودکار لیست ایران (نسخه اصلاح شده)
-    /system script add name=UpdateIranIPs source="/tool fetch url=\"https://github.com/herrbischoff/country-ip-blocks/raw/master/ipv4/ir.cidr\" dst-path=ir.cidr; :local content [/file get ir.cidr contents]; /ip firewall address-list remove [find list=IRAN_IPs]; :foreach line in=[:toarray \$content] do={ :if ([:len \$line] > 8) do={ /ip firewall address-list add list=IRAN_IPs address=\$line } }; /file remove ir.cidr"
+    # ۹. اسکریپت آپدیت ایران (بخش حساس با متد امن)
+    /system script add name=UpdateIranIPs
+    /system script set UpdateIranIPs source="/tool fetch url=\"https://github.com/herrbischoff/country-ip-blocks/raw/master/ipv4/ir.cidr\" dst-path=ir.cidr; :local content [/file get ir.cidr contents]; /ip firewall address-list remove [find list=IRAN_IPs]; :foreach line in=[:toarray \$content] do={ :if ([:len \$line] > 6) do={ /ip firewall address-list add list=IRAN_IPs address=\$line } }; /file remove ir.cidr"
+
     /system scheduler add name=Schedule_Update_IR_IP interval=7d on-event=UpdateIranIPs start-time=03:00:00
     /system scheduler add name=Run_Update_On_Startup on-event=UpdateIranIPs start-time=startup
 
-    # ۱۰. سرویس‌های سیستم
+    # ۱۰. امنیت سرویس‌ها
     /ip service set telnet,ftp,api,api-ssl disabled=yes
 
     :put "----------------------------------------------------"
     :put "!!! SETUP COMPLETED SUCCESSFULLY !!!"
     :put "----------------------------------------------------"
 
-    # حذف خودکار فایل اسکریپت بعد از اتمام کار
+    # حذف فایل موقت
     /file remove [find name="Setup.rsc"]
-    :put "Temporary script file has been removed."
 }
